@@ -6,12 +6,20 @@
 const byte columns = 4;
 const byte rows = 5;
 
-char keys[rows][columns] = {
+const char keys[rows][columns] = {
 {'c', '=', '/', '*'},
 {'7', '8', '9', '-'},
 {'4', '5', '6', '+'},
 {'1', '2', '3', '\r'},
 {'0', 'x', '.', 'x'}
+};
+
+const int keyType[rows][columns] = {
+{5, 4, 3, 3},
+{1, 1, 1, 3},
+{1, 1, 1, 3},
+{1, 1, 1, 4},
+{1, -1, 2, -1}
 };
 
 const int colPins[columns] = {1, 2, 5, 6};
@@ -29,6 +37,7 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 #define NUM2 3;
 #define END 4;
 int calcState = START;
+int numDigits = 0;
 
 // Debouncer
 bool lastDebounceInput[rows][columns] = {0};
@@ -40,10 +49,19 @@ bool currentKeyState[rows][columns] = {0};
 // Increase this number if the debouncer is not functioning correctly
 unsigned long debounceDelay = 50;
 
+// Posedge
+bool lastPosedgeInput[rows][columns] = {0};
+
+// Function prototypes
+bool debouncer(bool input, int row, int col);
+void calculator(void);
+bool posedge(bool input, int row, int col);
+void numberpad(void);
+
 void setup() {
   // Setup LCD
   lcd.begin(16, 2);
-  
+  lcd.print("Calc Numberpad  by jimya ver 1.0")
   // Initiate all the outputs (Columns)
   for (int i = 0, i < columns, i++){
     pinMode(colPins[i], OUTPUT);
@@ -57,7 +75,8 @@ void setup() {
 
   // Initiate mode switch
   pinMode(modePin, INPUT);
-
+  delay(5000);
+  lcd.clear();
   Serial.begin(9600);
 }
 
@@ -94,9 +113,19 @@ void loop() {
     number_pad(reg1Debounced, reg2Debounced);
   }
 
-  // TODO - Add Wait time
+  delay(10);
 }
 
+/**
+ * Given the current state of an input as well as the coordinates of
+ * the input, debounces the signal using the time passed since the button
+ * was originally pressed
+ *
+ * @param {boolean} input - the state of the current input
+ * @param {integer} row - the row of the current input
+ * @param {integer} column - the column of the current input
+ * @returns {boolean} - the debounced signal of the current input
+*/
 bool debouncer(bool input, int row, int col) {
   // If the input has changed update the last debounce time and input
   bool temp = lastDebounceInput[row][col];
@@ -113,10 +142,50 @@ bool debouncer(bool input, int row, int col) {
   return temp;
 }
 
+/**
+ * The logic for the calculator portion of the device.
+*/
 void calculator(void) {
-  // TODO - Add posedge
+  char keyPressed = '?';
+  // Checks if a key is pressed
+  for (int i = 0, i < columns, i++) {
+    for (int j = 0, j < rows, j++) {
+      if (posedge(currentKeyState[j][i], j , i) == 1) {
+        keyPressed = keys[j][i];
+      }
+    }
+  }
+  if (keyPressed == '?') return;
+
+  // TODO - Finish Calculator Logic
 }
 
+/**
+ * Given the current state of an input as well as the coordinates of
+ * the input, detects the posedge the signal using the time passed since the 
+ * button was originally pressed
+ *
+ * @param {boolean} input - the state of the current input
+ * @param {integer} row - the row of the current input
+ * @param {integer} column - the column of the current input
+ * @returns {boolean} - the posedge signal of the current input
+*/
+bool posedge(bool input, int row, int col) {
+  // If the input has changed update the last debounce time and input
+  bool temp = lastPosedgeInput[row][col];
+  if (input == 1 && lastPosedgeInput[row][col] == 0) {
+    lastPosedgeInput[row][col] = 1;
+    return 1;
+  } else if (input == 0 && lastPosedgeInput[row][col] == 1) {
+    lastPosedgeInput[row][col] = 0;
+  }
+
+  return 0;
+}
+
+/**
+ * The logic for the numberpad portion of the device.
+*/
 void numberpad(void) {
   for (int i = 0, i < columns, i++) {
     for (int j = 0, j < rows, j++) {
