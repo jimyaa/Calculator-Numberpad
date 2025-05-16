@@ -46,7 +46,8 @@ bool lastDebounceInput[rows][columns] = {0};
 unsigned long lastDebounceTime[rows][columns] = {0};
 bool currentKeyState[rows][columns] = {0};
 
-// Increase this number if the debouncer is not functioning correctly
+// Increase this number if the keypad is double pressing
+// Decrease this number if the keypad is not responsive
 unsigned long debounceDelay = 50;
 
 // Posedge
@@ -156,6 +157,7 @@ void calculator(void) {
     }
   }
   if (keyPressed == '?') return;
+
 
   // TODO - Finish Calculator Logic
 }
