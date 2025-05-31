@@ -39,6 +39,15 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 int calcState = START;
 int numDigits = 0;
 
+// Calculator Variables
+#define MAXNUM = 7;
+
+char number1[MAXNUM] = {0};
+int number1Length = 0;
+char operator = '?';
+char number2[MAXNUM] = {0};
+int number2Length = 0;
+
 // Debouncer
 bool lastDebounceInput[rows][columns] = {0};
 
@@ -158,7 +167,7 @@ void calculator(void) {
   }
   if (keyPressed == '?') return;
 
-
+  
   // TODO - Finish Calculator Logic
 }
 
